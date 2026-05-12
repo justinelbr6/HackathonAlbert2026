@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Explication complète du projet — Sujet 1 Log as Code</title>
+</head>
+<body>
+
+<h1>Explication complète du projet — Sujet 1 : Log as Code</h1>
+
+<p>
+Ce document sert à expliquer clairement le projet à toute l’équipe. Il reprend les termes techniques importants, le problème que l’on veut résoudre, la logique de notre solution, ce que l’on a déjà comme données, et surtout ce qui rend notre approche originale par rapport à une solution basique générée par une IA.
+</p>
+
+<p>
+L’objectif est que chacun puisse comprendre le sujet sans être expert en cybersécurité, sans être développeur avancé, et sans connaître en détail les frameworks comme MITRE ATT&amp;CK ou CVE.
+</p>
+
+<hr>
+
+<h2>1. Le sujet en une phrase</h2>
+
+<p>
+Le sujet consiste à créer une solution capable de transformer des informations sur les menaces cyber en recommandations concrètes de journalisation : quels logs collecter, sur quels systèmes, pourquoi les collecter, et avec quelle priorité.
+</p>
+
+<p>
+Autrement dit, on ne cherche pas simplement à analyser des logs déjà existants. On cherche à décider en amont quels logs doivent être collectés pour mieux détecter les attaques importantes.
+</p>
+
+<p>
+La phrase centrale du projet est donc :
+</p>
+
+<p>
+<strong>Le problème n’est pas de collecter plus de logs, mais de collecter les bons logs.</strong>
+</p>
+
+<hr>
+
+<h2>2. Le problème de départ</h2>
+
+<p>
+Dans beaucoup d’organisations, les systèmes informatiques produisent énormément de logs. Ces logs viennent des serveurs, des postes utilisateurs, des applications web, des firewalls, des outils de sécurité, des systèmes Windows, des systèmes Linux, des équipements réseau, etc.
+</p>
+
+<p>
+Un log est une trace laissée par un système. Par exemple :
+</p>
+
+<ul>
+  <li>un utilisateur s’est connecté ;</li>
+  <li>un mot de passe a été refusé ;</li>
+  <li>un programme a été lancé ;</li>
+  <li>une commande PowerShell a été exécutée ;</li>
+  <li>un fichier a été téléchargé ;</li>
+  <li>une requête web suspecte a été reçue ;</li>
+  <li>une connexion réseau a été ouverte vers une adresse IP externe.</li>
+</ul>
+
+<p>
+Le problème est que collecter tous les logs possibles n’est pas forcément une bonne solution.
+</p>
+
+<p>
+Si on collecte trop de logs, on crée plusieurs difficultés :
+</p>
+
+<ul>
+  <li>on stocke beaucoup de données inutiles ;</li>
+  <li>on augmente les coûts de stockage ;</li>
+  <li>on crée du bruit pour les analystes sécurité ;</li>
+  <li>on rend les alertes plus difficiles à prioriser ;</li>
+  <li>on risque de noyer les vrais signaux importants dans une masse d’événements sans intérêt.</li>
+</ul>
+
+<p>
+Mais si on ne collecte pas assez de logs, on crée aussi un risque : on peut rater les signaux d’une attaque.
+</p>
+
+<p>
+Le vrai enjeu est donc de trouver un bon équilibre : collecter suffisamment pour détecter les menaces importantes, mais pas tout collecter sans logique.
+</p>
+
+<hr>
+
+<h2>3. Ce que signifie “Log as Code”</h2>
+
+<p>
+Le terme “Log as Code” désigne l’idée de décrire une politique de journalisation dans un format structuré, lisible par un humain et exploitable par une machine.
+</p>
+
+<p>
+Au lieu d’avoir une politique de logs écrite vaguement dans un document Word, on peut avoir une politique en YAML ou en JSON. Ces formats sont utilisés en informatique pour représenter des données de manière structurée.
+</p>
+
+<p>
+Exemple simplifié d’une politique de logs :
+</p>
+
+<pre>
+policy:
+  technique: T1059
+  menace: Exécution de commandes suspectes
+  systemes:
+    - Windows Server
+  logs_a_collecter:
+    - source: Sysmon
+      champs:
+        - CommandLine
+        - ProcessName
+        - ParentProcessName
+      priorite: indispensable
+      justification: détecter les commandes PowerShell ou cmd suspectes
+</pre>
+
+<p>
+Ce format a plusieurs avantages :
+</p>
+
+<ul>
+  <li>il est clair ;</li>
+  <li>il est versionnable avec Git ;</li>
+  <li>il peut être relu par une équipe sécurité ;</li>
+  <li>il peut être généré automatiquement ;</li>
+  <li>il peut être utilisé ensuite par d’autres outils.</li>
+</ul>
+
+<p>
+L’idée du projet est donc de produire automatiquement ce type de politique à partir d’informations sur les menaces.
+</p>
+
+<hr>
+
+<h2>4. Les termes techniques importants</h2>
+
+<h3>4.1 Log</h3>
+
+<p>
+Un log est une trace d’activité produite par un système informatique. Il peut indiquer qu’un événement s’est produit : connexion, erreur, exécution d’un programme, requête réseau, alerte de sécurité, etc.
+</p>
+
+<p>
+Un log est utile en cybersécurité parce qu’il peut permettre de comprendre ce qui s’est passé avant, pendant ou après une attaque.
+</p>
+
+<h3>4.2 Journalisation</h3>
+
+<p>
+La journalisation est le fait de collecter et conserver des logs. Une politique de journalisation définit quels événements doivent être enregistrés, où ils doivent être stockés, combien de temps ils doivent être conservés, et pourquoi ils sont utiles.
+</p>
+
+<h3>4.3 Politique de logs</h3>
+
+<p>
+Une politique de logs est une règle ou un ensemble de règles qui dit quoi collecter. Par exemple : collecter les événements de création de processus sur les serveurs Windows critiques, conserver les logs web pendant 30 jours, surveiller les commandes PowerShell suspectes, etc.
+</p>
+
+<h3>4.4 CTI</h3>
+
+<p>
+CTI signifie Cyber Threat Intelligence. En français, on peut traduire cela par renseignement sur les menaces cyber.
+</p>
+
+<p>
+La CTI consiste à collecter et organiser des informations sur les attaquants, leurs techniques, leurs outils, leurs objectifs, les vulnérabilités exploitées, et les comportements observés lors d’attaques réelles.
+</p>
+
+<p>
+Dans notre projet, la CTI sert de point de départ. On ne part pas des logs disponibles au hasard. On part des menaces connues pour décider quels logs doivent être collectés.
+</p>
+
+<h3>4.5 OSINT</h3>
+
+<p>
+OSINT signifie Open Source Intelligence. Cela désigne le renseignement obtenu à partir de sources ouvertes, accessibles publiquement ou fournies dans le cadre du challenge.
+</p>
+
+<p>
+Dans notre cas, les sources OSINT sont par exemple :
+</p>
+
+<ul>
+  <li>MITRE ATT&amp;CK ;</li>
+  <li>les bases CVE ;</li>
+  <li>les scores CVSS ;</li>
+  <li>les règles Sigma ;</li>
+  <li>les catalogues de vulnérabilités exploitées comme CISA KEV ;</li>
+  <li>les exemples de logs fournis dans le repo.</li>
+</ul>
+
+<h3>4.6 MITRE ATT&amp;CK</h3>
+
+<p>
+MITRE ATT&amp;CK est une base de connaissances qui décrit les techniques utilisées par les attaquants informatiques.
+</p>
+
+<p>
+Elle ne décrit pas seulement des vulnérabilités techniques. Elle décrit surtout des comportements d’attaque. Par exemple :
+</p>
+
+<ul>
+  <li>exécuter une commande ;</li>
+  <li>utiliser PowerShell ;</li>
+  <li>créer une tâche planifiée ;</li>
+  <li>désactiver un outil de sécurité ;</li>
+  <li>exfiltrer des données ;</li>
+  <li>exploiter une application exposée sur internet.</li>
+</ul>
+
+<p>
+Chaque technique possède un identifiant. Par exemple :
+</p>
+
+<ul>
+  <li>T1059 : Command and Scripting Interpreter ;</li>
+  <li>T1190 : Exploit Public-Facing Application ;</li>
+  <li>T1053 : Scheduled Task/Job ;</li>
+  <li>T1048 : Exfiltration Over Alternative Protocol.</li>
+</ul>
+
+<p>
+Dans notre projet, MITRE ATT&amp;CK sert à relier une menace à des types de logs utiles.
+</p>
+
+<h3>4.7 TTP</h3>
+
+<p>
+TTP signifie Tactics, Techniques and Procedures. En français : tactiques, techniques et procédures.
+</p>
+
+<p>
+Une tactique correspond à l’objectif de l’attaquant. Par exemple : accéder au système, exécuter du code, persister, exfiltrer des données.
+</p>
+
+<p>
+Une technique correspond à la manière d’atteindre cet objectif. Par exemple : utiliser PowerShell pour exécuter une commande.
+</p>
+
+<p>
+Une procédure correspond à la manière concrète dont une attaque utilise cette technique dans un cas réel.
+</p>
+
+<p>
+Dans notre projet, les TTP permettent de traduire une menace en comportements détectables.
+</p>
+
+<h3>4.8 CVE</h3>
+
+<p>
+CVE signifie Common Vulnerabilities and Exposures. Une CVE est un identifiant public donné à une vulnérabilité connue.
+</p>
+
+<p>
+Exemple : CVE-2021-44228 correspond à la vulnérabilité Log4Shell, une faille très critique liée à la bibliothèque Apache Log4j.
+</p>
+
+<p>
+Dans notre projet, les CVE servent à identifier les vulnérabilités importantes qui peuvent être exploitées par des attaquants.
+</p>
+
+<h3>4.9 CVSS</h3>
+
+<p>
+CVSS signifie Common Vulnerability Scoring System. C’est un score qui mesure la gravité technique d’une vulnérabilité.
+</p>
+
+<p>
+Le score va généralement de 0 à 10. Plus le score est élevé, plus la vulnérabilité est grave.
+</p>
+
+<p>
+Par exemple, une CVE avec un score de 10 est considérée comme critique.
+</p>
+
+<p>
+Dans notre projet, le CVSS permet de prioriser certaines vulnérabilités. Mais il ne suffit pas à lui seul, car une vulnérabilité très grave techniquement n’est pas forcément la plus prioritaire pour une organisation donnée. Il faut aussi prendre en compte l’actif concerné, l’exposition du système, et le contexte opérationnel.
+</p>
+
+<h3>4.10 CISA KEV</h3>
+
+<p>
+CISA KEV signifie Known Exploited Vulnerabilities. C’est un catalogue de vulnérabilités connues pour être activement exploitées.
+</p>
+
+<p>
+C’est une source très intéressante parce qu’elle ajoute une information que le CVSS ne donne pas toujours : est-ce que cette vulnérabilité est réellement exploitée dans le monde réel ?
+</p>
+
+<p>
+Dans notre projet, CISA KEV pourrait servir à renforcer la priorisation des CVE. Une CVE critique et activement exploitée devrait être traitée avec plus d’urgence qu’une CVE critique mais peu exploitée.
+</p>
+
+<h3>4.11 Sigma</h3>
+
+<p>
+Sigma est un format générique pour écrire des règles de détection de sécurité.
+</p>
+
+<p>
+Une règle Sigma décrit un comportement suspect, indépendamment d’un outil précis. Elle peut ensuite être traduite vers différents systèmes de détection comme Splunk, Elastic, Sentinel, etc.
+</p>
+
+<p>
+Dans notre projet, Sigma est utile parce qu’il fait le lien entre une menace et une logique de détection concrète.
+</p>
+
+<h3>4.12 Splunk</h3>
+
+<p>
+Splunk est un outil utilisé pour rechercher, analyser et visualiser des logs. Dans le repo, certains fichiers contiennent des exemples de requêtes Splunk.
+</p>
+
+<p>
+Ces requêtes montrent comment on pourrait rechercher dans les logs les signes d’une attaque particulière.
+</p>
+
+<h3>4.13 Sysmon</h3>
+
+<p>
+Sysmon est un outil Microsoft qui permet d’enregistrer des événements détaillés sur un système Windows, par exemple la création de processus, les connexions réseau, ou les modifications de fichiers.
+</p>
+
+<p>
+Dans notre projet, Sysmon est particulièrement utile pour détecter des comportements comme l’exécution de commandes suspectes ou l’utilisation de PowerShell.
+</p>
+
+<h3>4.14 Suricata</h3>
+
+<p>
+Suricata est un outil de détection réseau. Il peut analyser le trafic réseau et produire des alertes lorsqu’il observe un comportement suspect.
+</p>
+
+<p>
+Dans notre projet, Suricata représente la couche réseau de la détection.
+</p>
+
+<h3>4.15 Apache logs</h3>
+
+<p>
+Les logs Apache sont les logs produits par un serveur web Apache. Ils peuvent contenir des requêtes HTTP, des adresses IP, des chemins demandés, des user agents, ou des payloads suspects.
+</p>
+
+<p>
+Dans notre projet, ils sont utiles pour détecter des attaques contre des applications web, par exemple une tentative d’exploitation Log4Shell.
+</p>
+
+<h3>4.16 YAML et JSON</h3>
+
+<p>
+YAML et JSON sont des formats de données structurées. Ils permettent de représenter des informations de manière lisible par des humains et par des machines.
+</p>
+
+<p>
+Dans notre projet, la politique de logs générée pourrait être produite dans l’un de ces formats.
+</p>
+
+<hr>
+
+<h2>5. Les données que nous avons déjà</h2>
+
+<p>
+Le repo du challenge fournit plusieurs fichiers utiles. Ces fichiers sont nos matières premières pour le livrable 2 et pour le futur prototype.
+</p>
+
+<h3>5.1 Extraits CVE</h3>
+
+<p>
+Nous avons des fichiers comme Extrait_cve_data.JSON et cve_data_with_cvss_and_mitre.csv.
+</p>
+
+<p>
+Ils contiennent des informations sur des vulnérabilités : identifiant CVE, description, score CVSS, logiciels concernés, exploitabilité, techniques MITRE associées.
+</p>
+
+<p>
+Le signal utile fourni par ces données est la priorité des vulnérabilités. Elles nous permettent de savoir quelles menaces techniques semblent graves.
+</p>
+
+<h3>5.2 Extrait MITRE ATT&amp;CK</h3>
+
+<p>
+Nous avons un fichier Extrait_mitre_attck.JSON. Il contient des techniques d’attaque, des tactiques, des plateformes concernées, des sources de données et des composants de détection.
+</p>
+
+<p>
+Le signal utile fourni par ce fichier est le lien entre une technique d’attaque et ce qu’il faut observer pour la détecter.
+</p>
+
+<p>
+Limite importante : le fichier semble partiellement mal formé. Cela veut dire qu’il ne faut pas le considérer comme une source industrialisable telle quelle. Pour un vrai produit, il faudrait récupérer une version propre depuis MITRE ATT&amp;CK au format STIX.
+</p>
+
+<h3>5.3 Mapping TTP / CVE / logs</h3>
+
+<p>
+Le fichier mapping_ttps_cve_logs.csv est probablement le fichier le plus important pour notre MVP.
+</p>
+
+<p>
+Il relie plusieurs éléments entre eux :
+</p>
+
+<ul>
+  <li>une TTP ;</li>
+  <li>une CVE éventuelle ;</li>
+  <li>un type de log ;</li>
+  <li>une source de log ;</li>
+  <li>des champs utiles ;</li>
+  <li>un exemple de log ;</li>
+  <li>une requête Splunk ;</li>
+  <li>une règle Sigma.</li>
+</ul>
+
+<p>
+C’est le fichier qui montre le mieux la chaîne de valeur du projet : menace → signal → log → politique de collecte.
+</p>
+
+<h3>5.4 Exemples de logs</h3>
+
+<p>
+Nous avons aussi plusieurs exemples de logs : Windows, Linux, Apache, Sysmon, Suricata, trafic réseau.
+</p>
+
+<p>
+Ces fichiers sont utiles pour montrer où les signaux apparaissent réellement. Par exemple, une commande PowerShell suspecte peut apparaître dans un log Sysmon, une tentative Log4Shell peut apparaître dans un log Apache, et une exfiltration peut apparaître dans des logs DNS ou réseau.
+</p>
+
+<h3>5.5 Dictionnaires de données</h3>
+
+<p>
+Les dictionnaires de données décrivent les champs présents dans les fichiers CVE ou ATT&amp;CK. Ils permettent de documenter proprement les données utilisées.
+</p>
+
+<p>
+C’est important parce qu’un projet sérieux ne doit pas seulement utiliser des fichiers. Il doit aussi savoir ce que signifient les colonnes et les champs utilisés.
+</p>
+
+<hr>
+
+<h2>6. La solution basique que tout le monde pourrait faire</h2>
+
+<p>
+Une solution assez évidente serait de faire simplement ceci :
+</p>
+
+<ol>
+  <li>prendre une CVE ;</li>
+  <li>trouver la TTP associée ;</li>
+  <li>trouver une source de log correspondante ;</li>
+  <li>générer un fichier YAML avec les champs à collecter.</li>
+</ol>
+
+<p>
+Cette solution serait correcte, mais elle ne serait pas très originale. Beaucoup d’équipes pourraient demander à une IA de faire exactement cela.
+</p>
+
+<p>
+Le problème de cette approche est qu’elle transforme simplement un format en un autre. Elle ne prend pas vraiment de décision. Elle ne répond pas à la question la plus importante : si on ne peut pas tout collecter, que doit-on collecter en priorité ?
+</p>
+
+<hr>
+
+<h2>7. Notre solution originale</h2>
+
+<p>
+Notre angle est différent. Nous ne voulons pas seulement générer une politique de logs. Nous voulons générer une politique de logs priorisée, expliquée et contrainte.
+</p>
+
+<p>
+Cela veut dire que notre solution doit aider à décider quels logs valent vraiment la peine d’être collectés.
+</p>
+
+<p>
+La formulation importante est :
+</p>
+
+<p>
+<strong>Nous ne générons pas seulement une politique de logs. Nous générons une décision de journalisation.</strong>
+</p>
+
+<p>
+La différence est importante.
+</p>
+
+<p>
+Une politique de logs simple dit :
+</p>
+
+<p>
+“Collecte Sysmon pour détecter T1059.”
+</p>
+
+<p>
+Notre approche veut plutôt dire :
+</p>
+
+<p>
+“Pour détecter T1059 sur un serveur Windows critique, Sysmon est indispensable parce qu’il permet d’observer la ligne de commande, le nom du processus et le processus parent. Son coût est acceptable par rapport à la couverture de détection obtenue. Si on ne le collecte pas, on crée un angle mort sur l’exécution de commandes suspectes.”
+</p>
+
+<p>
+Cela change complètement la valeur de la solution.
+</p>
+
+<hr>
+
+<h2>8. Pourquoi cette solution est originale</h2>
+
+<h3>8.1 Elle ne se contente pas de mapper des données</h3>
+
+<p>
+Un simple mapping dit : TTP → log. Notre solution ajoute une couche de raisonnement : pourquoi ce log, avec quelle priorité, pour quel actif, avec quel coût, et quel risque si on ne le collecte pas.
+</p>
+
+<h3>8.2 Elle introduit une logique d’arbitrage</h3>
+
+<p>
+Dans la réalité, une organisation ne peut pas tout collecter. Il y a des contraintes de stockage, de coût, de bruit, de temps analyste et de maintenance.
+</p>
+
+<p>
+Notre solution traite donc la journalisation comme un problème d’allocation de ressources.
+</p>
+
+<p>
+La question devient : quelle source de logs apporte le plus de valeur de détection pour le coût le plus acceptable ?
+</p>
+
+<h3>8.3 Elle est explicable</h3>
+
+<p>
+Une recommandation opaque n’est pas suffisante. Si le système recommande de collecter Sysmon, il doit expliquer pourquoi.
+</p>
+
+<p>
+L’explication doit dire :
+</p>
+
+<ul>
+  <li>quelle menace est couverte ;</li>
+  <li>quelle TTP est concernée ;</li>
+  <li>quel champ de log est nécessaire ;</li>
+  <li>quel actif est concerné ;</li>
+  <li>quel est le risque si le log n’est pas collecté.</li>
+</ul>
+
+<p>
+Cette explicabilité rend la solution plus crédible pour un jury et plus utile pour une équipe sécurité.
+</p>
+
+<h3>8.4 Elle prépare un futur modèle de machine learning</h3>
+
+<p>
+L’approche crée une structure qui pourra être utilisée plus tard pour entraîner un modèle de machine learning.
+</p>
+
+<p>
+Au début, on peut utiliser des règles simples. Par exemple :
+</p>
+
+<ul>
+  <li>si une CVE a un score CVSS élevé, elle est prioritaire ;</li>
+  <li>si une CVE est dans CISA KEV, elle devient encore plus prioritaire ;</li>
+  <li>si une TTP touche un actif critique, la recommandation monte en priorité ;</li>
+  <li>si une source de logs coûte très cher et apporte peu de couverture, elle descend en priorité.</li>
+</ul>
+
+<p>
+Ensuite, ces décisions peuvent devenir des exemples d’entraînement pour un modèle.
+</p>
+
+<h3>8.5 Elle propose plusieurs niveaux de politique</h3>
+
+<p>
+Au lieu de générer une seule politique unique, on peut imaginer trois niveaux :
+</p>
+
+<ul>
+  <li>politique minimale : les logs indispensables ;</li>
+  <li>politique équilibrée : bon compromis entre couverture et coût ;</li>
+  <li>politique haute assurance : couverture maximale pour les actifs critiques.</li>
+</ul>
+
+<p>
+C’est plus réaliste, car toutes les organisations n’ont pas les mêmes contraintes.
+</p>
+
+<hr>
+
+<h2>9. La logique de score proposée</h2>
+
+<p>
+Pour rendre notre approche concrète, on peut créer un score de valeur de log. Ce score sert à évaluer si une source de logs mérite d’être collectée.
+</p>
+
+<p>
+Une formule simple pourrait être :
+</p>
+
+<pre>
+Score de valeur du log =
+(pertinence menace × criticité actif × couverture détection × probabilité d’exploitation)
+÷
+(coût de collecte × niveau de bruit)
+</pre>
+
+<p>
+Il ne faut pas voir cette formule comme une vérité scientifique parfaite. C’est un cadre de décision. Elle force l’équipe à poser les bonnes questions.
+</p>
+
+<h3>9.1 Pertinence menace</h3>
+
+<p>
+Est-ce que ce log aide vraiment à détecter la menace ciblée ?
+</p>
+
+<p>
+Par exemple, les logs Sysmon sont très pertinents pour détecter l’exécution de commandes suspectes sur Windows.
+</p>
+
+<h3>9.2 Criticité actif</h3>
+
+<p>
+L’actif concerné est-il important ? Un serveur critique, un Active Directory ou un serveur web exposé sur internet n’ont pas la même importance qu’un poste de test isolé.
+</p>
+
+<h3>9.3 Couverture détection</h3>
+
+<p>
+Ce log couvre-t-il bien le comportement d’attaque ? Est-ce qu’il permet de voir le signal important ?
+</p>
+
+<h3>9.4 Probabilité d’exploitation</h3>
+
+<p>
+La menace est-elle réellement exploitée ? C’est ici que CISA KEV peut devenir utile.
+</p>
+
+<h3>9.5 Coût de collecte</h3>
+
+<p>
+Collecter ce log demande-t-il beaucoup de stockage, de configuration, de maintenance ou de traitement ?
+</p>
+
+<h3>9.6 Niveau de bruit</h3>
+
+<p>
+Ce log génère-t-il beaucoup d’événements peu utiles ? Plus le bruit est élevé, plus les analystes risquent d’être noyés.
+</p>
+
+<hr>
+
+<h2>10. Exemple concret</h2>
+
+<p>
+Prenons la technique T1059 : Command and Scripting Interpreter. Elle correspond à l’utilisation d’interpréteurs de commandes comme PowerShell, cmd ou bash pour exécuter du code.
+</p>
+
+<p>
+Une approche basique dirait : collecter les logs de processus.
+</p>
+
+<p>
+Notre approche dirait plutôt :
+</p>
+
+<pre>
+Menace : exécution de commandes suspectes
+TTP : T1059
+Actif : serveur Windows critique
+Source recommandée : Sysmon
+Champs nécessaires : CommandLine, ProcessName, ParentProcessName
+Priorité : indispensable
+Pourquoi : permet d’observer les commandes suspectes, les processus lancés et leur origine
+Coût estimé : moyen
+Bruit estimé : moyen
+Angle mort si absent : difficulté à détecter PowerShell ou cmd utilisés pour exécuter du code malveillant
+</pre>
+
+<p>
+Cet exemple montre la différence entre une simple correspondance technique et une recommandation vraiment utile.
+</p>
+
+<hr>
+
+<h2>11. Le rôle du machine learning plus tard</h2>
+
+<p>
+Le machine learning pourra intervenir plus tard, mais il ne doit pas être ajouté juste pour dire que le projet utilise de l’IA.
+</p>
+
+<p>
+Le bon rôle du machine learning serait d’apprendre à prioriser les logs selon le contexte.
+</p>
+
+<p>
+Chaque ligne du futur dataset pourrait représenter une décision de journalisation :
+</p>
+
+<ul>
+  <li>TTP concernée ;</li>
+  <li>CVE associée ;</li>
+  <li>type d’actif ;</li>
+  <li>source de log candidate ;</li>
+  <li>champs disponibles ;</li>
+  <li>score CVSS ;</li>
+  <li>présence ou non dans CISA KEV ;</li>
+  <li>coût estimé ;</li>
+  <li>bruit estimé ;</li>
+  <li>couverture estimée ;</li>
+  <li>label final : indispensable, recommandé, optionnel ou inutile.</li>
+</ul>
+
+<p>
+Le modèle pourrait ensuite apprendre à recommander ou classer les sources de logs.
+</p>
+
+<p>
+Le modèle le plus pertinent plus tard serait probablement un modèle de ranking, c’est-à-dire un modèle qui classe les logs du plus utile au moins utile pour une menace donnée.
+</p>
+
+<p>
+Cela serait plus intéressant qu’un simple modèle de classification, parce que dans notre cas la question est souvent : parmi plusieurs logs possibles, lesquels choisir en priorité ?
+</p>
+
+<hr>
+
+<h2>12. Pourquoi le livrable 2 est important</h2>
+
+<p>
+Le livrable 2 ne demande pas encore de construire toute la solution. Il demande de montrer que notre projet ne repose pas sur du vide.
+</p>
+
+<p>
+Il faut donc montrer :
+</p>
+
+<ul>
+  <li>quelles sources OSINT nous utilisons ;</li>
+  <li>quels outils nous comptons utiliser ;</li>
+  <li>quels datasets nous avons déjà sécurisés ;</li>
+  <li>d’où viennent ces données ;</li>
+  <li>ce qu’elles nous apportent ;</li>
+  <li>ce qu’il nous manque encore ;</li>
+  <li>comment nous comptons contourner ces manques.</li>
+</ul>
+
+<p>
+Notre livrable 2 doit donc ressembler à un brief de mission : court, concret, honnête, orienté données.
+</p>
+
+<hr>
+
+<h2>13. Ce qu’il nous manque encore</h2>
+
+<p>
+La donnée idéale qui rendrait le projet beaucoup plus fort serait un inventaire réaliste d’actifs et une politique de logs actuelle.
+</p>
+
+<p>
+Par exemple, il serait très utile d’avoir :
+</p>
+
+<ul>
+  <li>une liste de types d’actifs : serveur web, Active Directory, poste utilisateur, serveur Linux, bastion, firewall ;</li>
+  <li>leur niveau de criticité ;</li>
+  <li>les logs actuellement collectés ;</li>
+  <li>la volumétrie moyenne ;</li>
+  <li>le niveau de bruit ;</li>
+  <li>les contraintes de rétention ;</li>
+  <li>les coûts de stockage ou de traitement.</li>
+</ul>
+
+<p>
+Comme nous n’avons pas ces données réelles, nous devons utiliser des métriques proxy.
+</p>
+
+<p>
+Une métrique proxy est une approximation utilisée lorsqu’on ne dispose pas de la donnée parfaite.
+</p>
+
+<p>
+Par exemple :
+</p>
+
+<ul>
+  <li>utiliser le CVSS comme proxy de gravité technique ;</li>
+  <li>utiliser CISA KEV comme proxy d’exploitation réelle ;</li>
+  <li>utiliser ATT&amp;CK Data Components comme proxy de couverture de détection ;</li>
+  <li>utiliser un score simple faible / moyen / fort pour estimer le coût et le bruit d’une source de logs.</li>
+</ul>
+
+<hr>
+
+<h2>14. Résumé très simple pour expliquer le projet à l’oral</h2>
+
+<p>
+Voici une version très simple que l’on peut utiliser pour expliquer le projet :
+</p>
+
+<p>
+“Notre projet part d’un problème très concret : les organisations collectent beaucoup de logs, mais pas toujours les bons. Nous utilisons des données ouvertes comme MITRE ATT&amp;CK, CVE, CVSS et des exemples de logs pour relier des menaces à des sources de journalisation utiles. Mais notre originalité n’est pas seulement de générer un YAML. Notre objectif est de prioriser les logs selon leur valeur de détection, leur coût, leur bruit et la criticité des actifs. Autrement dit, on transforme la CTI en décisions de journalisation explicables.”
+</p>
+
+<hr>
+
+<h2>15. La phrase clé à retenir</h2>
+
+<p>
+<strong>Notre solution ne dit pas seulement quels logs peuvent détecter une menace. Elle aide à décider quels logs valent réellement la peine d’être collectés.</strong>
+</p>
+
+<hr>
+
+<h2>16. Ce que chacun dans le groupe doit comprendre</h2>
+
+<p>
+Pour être alignés, tout le groupe doit retenir les points suivants :
+</p>
+
+<ul>
+  <li>Le projet ne consiste pas seulement à analyser des logs existants.</li>
+  <li>Le projet consiste surtout à recommander quels logs collecter.</li>
+  <li>La CTI sert de point de départ.</li>
+  <li>MITRE ATT&amp;CK décrit les techniques d’attaque.</li>
+  <li>Les CVE décrivent des vulnérabilités.</li>
+  <li>Le CVSS donne une gravité technique.</li>
+  <li>Les logs sont les traces qui permettent d’observer les attaques.</li>
+  <li>Le mapping TTP / CVE / logs est la base du MVP.</li>
+  <li>L’originalité est la priorisation sous contrainte.</li>
+  <li>Plus tard, le machine learning pourra apprendre à classer les logs selon leur valeur.</li>
+</ul>
+
+<hr>
+
+<h2>17. Conclusion</h2>
+
+<p>
+Le projet est intéressant parce qu’il se place avant la détection classique. Au lieu de dire seulement “comment analyser les logs ?”, il pose une question plus fondamentale : “quels logs devons-nous collecter pour que la détection soit utile ?”.
+</p>
+
+<p>
+Cette approche est plus stratégique, car elle prend en compte la réalité des organisations : on ne peut pas tout collecter, tout stocker et tout analyser. Il faut faire des choix.
+</p>
+
+<p>
+Notre proposition est donc de créer un moteur de décision qui transforme des données de menace en recommandations de journalisation priorisées, justifiées et exploitables.
+</p>
+
+<p>
+C’est cette logique d’arbitrage qui rend la solution originale.
+</p>
+
+</body>
+</html>

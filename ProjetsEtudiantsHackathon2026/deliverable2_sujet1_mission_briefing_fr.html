@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Livrable 2 — Généralisation Log as Code — Sujet 1</title>
+  <style>
+    :root {
+      --ink: #0d1625;
+      --muted: #536174;
+      --paper: #ffffff;
+      --line: #d6e0ec;
+      --navy: #102033;
+      --blue: #174ea6;
+      --blue-soft: #eaf2ff;
+      --green: #0f766e;
+      --green-soft: #e8fbf7;
+      --amber: #a65f00;
+      --amber-soft: #fff3dc;
+      --red: #b42342;
+      --red-soft: #fff0f3;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #e7edf5; color: var(--ink); font-family: "Segoe UI", "Aptos", "Helvetica Neue", Arial, sans-serif; }
+    body { padding: 14px; }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      background: var(--paper);
+      padding: 9.5mm 10.5mm;
+      border: 1px solid rgba(13, 22, 37, .08);
+      box-shadow: 0 18px 55px rgba(16,32,51,.13);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(23,78,166,.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(23,78,166,.035) 1px, transparent 1px);
+      background-size: 18px 18px;
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 1; }
+
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 12px;
+      border-bottom: 2px solid var(--navy);
+      padding-bottom: 7px;
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      background: var(--navy);
+      color: white;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.02;
+      letter-spacing: -.035em;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 10.7px;
+      line-height: 1.28;
+      max-width: 620px;
+      font-weight: 560;
+    }
+
+    .deadline {
+      text-align: right;
+      min-width: 132px;
+    }
+
+    .deadline .label {
+      font-size: 8.5px;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .deadline .date {
+      margin-top: 3px;
+      font-size: 13px;
+      font-weight: 850;
+      color: var(--red);
+    }
+
+    .mission {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 7px;
+      margin-bottom: 8px;
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.96);
+      padding: 8px 9px;
+    }
+
+    .box.dark {
+      background: linear-gradient(160deg, #102033, #18344c);
+      color: white;
+      border-color: rgba(255,255,255,.08);
+    }
+
+    .box-title {
+      font-size: 8.8px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    .dark .box-title { color: rgba(255,255,255,.66); }
+    .box p { margin: 0; font-size: 10.35px; line-height: 1.28; color: #2b3a4d; }
+    .dark p { color: rgba(255,255,255,.88); }
+    .box strong { color: var(--ink); }
+    .dark strong { color: #fff; }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.96);
+      margin-bottom: 7px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 9px;
+      background: #f6f9fd;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 13.6px;
+      letter-spacing: -.02em;
+    }
+
+    .section-head span {
+      font-size: 8.5px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 850;
+      color: var(--blue);
+    }
+
+    .section-body { padding: 8px 9px; }
+
+    .framework-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .mini h3 {
+      margin: 0 0 5px;
+      font-size: 11.2px;
+    }
+
+    .mini ul {
+      margin: 0;
+      padding-left: 14px;
+      font-size: 9.8px;
+      line-height: 1.27;
+      color: #314357;
+    }
+
+    .mini li { margin-bottom: 3px; }
+
+    .tool-row {
+      display: grid;
+      grid-template-columns: 102px 1fr;
+      gap: 5px;
+      font-size: 9.5px;
+      line-height: 1.24;
+      margin-bottom: 4px;
+    }
+
+    .tool-row strong {
+      color: var(--navy);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 8.85px;
+      line-height: 1.22;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    thead th {
+      background: var(--navy);
+      color: #fff;
+      text-align: left;
+      padding: 5.5px 6px;
+      font-size: 8.5px;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      border-right: 1px solid rgba(255,255,255,.16);
+    }
+
+    tbody td {
+      vertical-align: top;
+      padding: 5.5px 6px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      color: #263648;
+      background: #fff;
+    }
+
+    tbody tr:nth-child(even) td { background: #f9fbfe; }
+    tbody tr:last-child td { border-bottom: none; }
+    th:last-child, td:last-child { border-right: none; }
+    .dataset { font-weight: 780; color: var(--navy); }
+    .fresh { color: var(--amber); font-weight: 760; }
+    .signal { color: var(--green); font-weight: 700; }
+
+    .gaps {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 7px;
+    }
+
+    .gap {
+      border-radius: 10px;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      min-height: 86px;
+    }
+
+    .gap h3 {
+      margin: 0 0 4px;
+      font-size: 10.6px;
+      color: var(--navy);
+    }
+
+    .gap p {
+      margin: 0;
+      font-size: 9.4px;
+      line-height: 1.25;
+      color: #314357;
+    }
+
+    .gap.red { background: var(--red-soft); }
+    .gap.amber { background: var(--amber-soft); }
+    .gap.green { background: var(--green-soft); }
+
+    .bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-top: 7px;
+    }
+
+    .takeaway {
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: linear-gradient(160deg, #102033, #18344c);
+      color: #fff;
+      font-size: 10.7px;
+      line-height: 1.31;
+      font-weight: 720;
+    }
+
+    .takeaway span { color: #a7f3d0; }
+
+    .next {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: #fbfdff;
+      font-size: 9.7px;
+      line-height: 1.29;
+      color: #314357;
+    }
+
+    .next strong { color: var(--navy); }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 8.3px;
+      font-weight: 650;
+    }
+
+    @page { size: A4; margin: 0; }
+    @media print {
+      html, body { background: white; padding: 0; }
+      .page { width: 210mm; height: 297mm; margin: 0; border: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="content">
+      <header class="top">
+        <div>
+          <div class="tag">Brief de mission · Généralisation</div>
+          <h1>Livrable 2 — Généraliser Log as Code</h1>
+          <p class="subtitle">Sujet 1 : passer d’une mise en jambe locale à une démarche industrialisable : extraction MITRE quotidienne, association TTP/CVE, NLP, scoring et génération de politiques de logs YAML/JSON.</p>
+        </div>
+        <div class="deadline">
+          <div class="label">Échéance</div>
+          <div class="date">12 mai · 23h59</div>
+        </div>
+      </header>
+
+      <section class="mission">
+        <div class="box">
+          <div class="box-title">Intention de généralisation</div>
+          <p>La mise en jambe sert seulement de graine. Le vrai livrable montre comment passer à l’échelle : <strong>MITRE Enterprise complet → CVE critiques → relation TTP/CVE scorée → logs nécessaires → politiques générées.</strong></p>
+        </div>
+        <div class="box dark">
+          <div class="box-title">Question centrale</div>
+          <p><strong>Comment identifier automatiquement les CVE/TTP qui comptent pour notre SI</strong>, puis décider quels logs collecter en priorité pour les détecter ?</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><h2>A. Cadre de généralisation</h2><span>Consigne → pipeline cible</span></div>
+        <div class="section-body framework-grid">
+          <div class="mini">
+            <h3>Chaîne de traitement demandée</h3>
+            <ul>
+              <li><strong>Extraction quotidienne</strong> du fichier MITRE Enterprise ATT&CK via STIX/TAXII, `attackcti`, `pyattck` ou `stix2`.</li>
+              <li><strong>Association TTP/CVE</strong> depuis CVE/NVD/CVSS, puis enrichissement par bases tierces comme CISA KEV.</li>
+              <li><strong>Analyse textuelle NLP</strong> : rapprocher descriptions CVE, scénarios d’attaque et techniques MITRE.</li>
+              <li><strong>Score de relation</strong> : confiance TTP/CVE + impact SI + exploitabilité + observabilité dans les logs.</li>
+              <li><strong>Génération YAML/JSON</strong> des politiques de logs pour les TTP/CVE critiques.</li>
+            </ul>
+          </div>
+          <div class="mini">
+            <h3>Réponse proposée</h3>
+            <div class="tool-row"><strong>Python</strong><span>Pipeline reproductible : parsing, normalisation, scoring, export.</span></div>
+            <div class="tool-row"><strong>STIX / TAXII</strong><span>Source MITRE propre, maintenable et actualisable.</span></div>
+            <div class="tool-row"><strong>NLP léger</strong><span>Similarité texte pour généraliser au-delà des 5 mappings initiaux.</span></div>
+            <div class="tool-row"><strong>Scoring</strong><span>CVSS, confiance, exposition, criticité actif, coût/bruit et couverture.</span></div>
+            <div class="tool-row"><strong>YAML / JSON</strong><span>Politiques de logs lisibles, versionnables et actionnables.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><h2>B. Inventaire orienté généralisation</h2><span>Données + rôle dans le passage à l’échelle</span></div>
+        <div class="section-body">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:21%">Donnée / source</th>
+                <th style="width:22%">Provenance / fraîcheur</th>
+                <th style="width:32%">Contenu exploitable</th>
+                <th style="width:25%">Usage pour généraliser</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="dataset">Généralisation/enterprise-attack.json.zip</td>
+                <td>Extraction MITRE ATT&CK Enterprise du 7 mai ; source officielle GitHub MITRE STIX ; <span class="fresh">697 techniques actives</span> extraites dans le prototype.</td>
+                <td>Objets STIX : techniques, sous-techniques, tactiques, descriptions, relations, sources/composants de données et stratégies de détection.</td>
+                <td class="signal">Socle principal : permet de ne plus dépendre des 5 exemples de mise en jambe et d’ouvrir une recommandation NLP à grande échelle.</td>
+              </tr>
+              <tr>
+                <td class="dataset">CVE / NVD / CVSS / cvelistV5</td>
+                <td>À récupérer automatiquement depuis CVE.org/NVD ; le repo fournit un extrait de 5 CVE comme échantillon de validation.</td>
+                <td>Identifiant CVE, description, CVSS, logiciels affectés, références, exploitabilité et liens potentiels vers techniques ATT&CK.</td>
+                <td class="signal">Répond à la consigne “identifier les CVE critiques pour nous” via score CVSS + exposition + contexte asset + KEV.</td>
+              </tr>
+              <tr>
+                <td class="dataset">MiseEnJambe/mapping_ttps_cve_logs.csv</td>
+                <td>Petit mapping fourni dans le challenge ; <span class="fresh">5 lignes</span> servant de graine fonctionnelle.</td>
+                <td>TTP, CVE, score, type/source de log, champs, exemple de log, requête Splunk et règle Sigma.</td>
+                <td class="signal">Jeu d’amorçage pour apprendre la forme attendue d’une politique et tester la chaîne TTP/CVE → logs.</td>
+              </tr>
+              <tr>
+                <td class="dataset">Logs réalistes synthétiques / anonymisés</td>
+                <td>Sysmon, Suricata, Apache, Windows events, Linux syslog et trafic réseau fournis ; à enrichir par génération/anonymisation.</td>
+                <td>Processus, lignes de commande, payloads web, alertes réseau, événements système, DNS/proxy et traces d’exfiltration.</td>
+                <td class="signal">Permet de vérifier l’observabilité réelle : une TTP n’est utile que si un indicateur apparaît dans une source de log collectable.</td>
+              </tr>
+              <tr>
+                <td class="dataset">Mini-CMDB + contexte SI</td>
+                <td>Donnée manquante à simuler : actifs, criticité, exposition Internet, logs actuels, coût, bruit et rétention.</td>
+                <td>Type d’actif, rôle métier, surface d’exposition, sources disponibles, contraintes de stockage et charge analyste.</td>
+                <td class="signal">Transforme une liste générique MITRE en priorités adaptées à “notre” environnement : indispensable / recommandé / optionnel.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><h2>C. Gaps, scores et décision</h2><span>Ce qui manque + comment le compenser</span></div>
+        <div class="section-body gaps">
+          <div class="gap red">
+            <h3>Gap principal</h3>
+            <p>MITRE décrit les comportements, mais ne dit pas seul quelles CVE sont prioritaires pour notre SI. Il manque l’exposition réelle des actifs, les logiciels déployés, la volumétrie et le bruit des logs.</p>
+          </div>
+          <div class="gap amber">
+            <h3>Score proposé</h3>
+            <p>Score TTP/CVE = confiance NLP + sévérité CVSS/KEV + criticité de l’actif + exposition + couverture de détection − coût/bruit de collecte.</p>
+          </div>
+          <div class="gap green">
+            <h3>Sortie attendue</h3>
+            <p>Pour chaque menace critique : sources de logs indispensables/recommandées/optionnelles, champs à retenir, justification, angle mort si absent et export YAML/JSON.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="bottom">
+        <div class="takeaway">Angle stratégique : <span>la généralisation est le cœur du livrable</span>. On part d’un mini-mapping pédagogique, puis on l’étend avec MITRE Enterprise, CVE/NVD, NLP et scoring pour produire des politiques de logs priorisées.</div>
+        <div class="next"><strong>Prototype aligné avec la consigne :</strong> un premier module charge déjà `enterprise-attack.json.zip`, extrait 697 techniques ATT&CK actives et recommande les TTP proches d’un scénario texte ; la suite consiste à brancher ces TTP sur le moteur YAML/JSON et le score TTP/CVE.</div>
+      </div>
+
+      <footer class="footer">
+        <span>Hackathon Albert 2026 · Sujet 1 · Généralisation Log as Code</span>
+        <span>Brief de mission · MITRE → CVE → NLP → Score → Logs → YAML/JSON</span>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>

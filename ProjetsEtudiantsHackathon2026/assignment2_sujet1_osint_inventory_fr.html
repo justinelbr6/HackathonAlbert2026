@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deliverable 2 — Sujet 1 Log as Code</title>
+  <style>
+    :root {
+      --bg: #eef3f8;
+      --paper: #ffffff;
+      --ink: #102033;
+      --muted: #5d6b7d;
+      --line: #d7e1ec;
+      --blue: #1d4ed8;
+      --blue-soft: #e8f0ff;
+      --cyan: #0f766e;
+      --cyan-soft: #e8fbf7;
+      --amber: #b45309;
+      --amber-soft: #fff4df;
+      --rose: #be123c;
+      --rose-soft: #fff1f4;
+      --shadow: 0 24px 80px rgba(16, 32, 51, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: linear-gradient(180deg, #edf3f8 0%, #e8eef5 100%); color: var(--ink); }
+    body {
+      font-family: "Segoe UI", "Aptos", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      padding: 28px;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(16, 32, 51, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page::before,
+    .page::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(6px);
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .page::before {
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(29, 78, 216, 0.14) 0%, rgba(29, 78, 216, 0) 72%);
+      top: -70px;
+      right: -80px;
+    }
+
+    .page::after {
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(15, 118, 110, 0.11) 0%, rgba(15, 118, 110, 0) 72%);
+      bottom: -80px;
+      left: -60px;
+    }
+
+    .content {
+      padding: 18mm 16mm 15mm;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 14px 0 8px;
+      font-size: 31px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 88%;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      margin-top: 20px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .signal-card,
+    .section,
+    .metric,
+    .dataset-card,
+    .gap-card,
+    .idea-card,
+    .closing-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.94);
+    }
+
+    .hero-card {
+      padding: 16px 18px;
+      background: linear-gradient(145deg, #ffffff 0%, #f7faff 100%);
+    }
+
+    .hero-card p {
+      margin: 0;
+      font-size: 15px;
+      color: #233243;
+    }
+
+    .signal-card {
+      padding: 16px;
+      background: linear-gradient(180deg, #102033 0%, #18344c 100%);
+      color: white;
+    }
+
+    .signal-label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.68);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .signal-main {
+      font-size: 24px;
+      line-height: 1.08;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .signal-card p {
+      margin: 0;
+      color: rgba(255,255,255,0.82);
+      font-size: 13px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      padding: 12px 12px 13px;
+      background: #fbfdff;
+    }
+
+    .metric .kicker {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .metric .value {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 800;
+      margin-bottom: 5px;
+      color: var(--ink);
+    }
+
+    .metric p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section {
+      margin-top: 14px;
+      padding: 15px 16px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .section p {
+      margin: 0 0 10px;
+      color: #263648;
+      font-size: 13px;
+    }
+
+    .mini-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .flow-step {
+      padding: 10px 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+      border: 1px solid #d9e7ff;
+      font-size: 12px;
+      min-height: 82px;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--blue);
+    }
+
+    .dataset-grid,
+    .gaps-grid,
+    .ideas-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dataset-grid { grid-template-columns: repeat(2, 1fr); }
+    .gaps-grid { grid-template-columns: repeat(2, 1fr); }
+    .ideas-grid { grid-template-columns: repeat(3, 1fr); }
+
+    .dataset-card,
+    .gap-card,
+    .idea-card,
+    .closing-card {
+      padding: 13px 13px 12px;
+    }
+
+    .dataset-card h3,
+    .gap-card h3,
+    .idea-card h3,
+    .closing-card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .dataset-card p,
+    .gap-card p,
+    .idea-card p,
+    .closing-card p {
+      margin: 0;
+      font-size: 12px;
+      color: #314357;
+    }
+
+    .dataset-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 8px;
+    }
+
+    .pill {
+      font-size: 10px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+
+    .dataset-card ul,
+    .gap-card ul,
+    .idea-card ul,
+    .closing-card ul {
+      margin: 8px 0 0 16px;
+      padding: 0;
+      color: #314357;
+      font-size: 12px;
+    }
+
+    .dataset-card li,
+    .gap-card li,
+    .idea-card li,
+    .closing-card li {
+      margin-bottom: 5px;
+    }
+
+    .tone-blue { background: linear-gradient(180deg, #fbfdff 0%, #eef5ff 100%); }
+    .tone-cyan { background: linear-gradient(180deg, #fbfffe 0%, #ebfbf8 100%); }
+    .tone-amber { background: linear-gradient(180deg, #fffdfa 0%, #fff5e7 100%); }
+    .tone-rose { background: linear-gradient(180deg, #fffafb 0%, #fff0f3 100%); }
+
+    .closing-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .quote {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #102033 0%, #16324b 100%);
+      color: #f8fbff;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .page {
+        width: auto;
+        min-height: auto;
+        margin: 0;
+        box-shadow: none;
+        border: none;
+      }
+      .page::before,
+      .page::after {
+        display: none;
+      }
+      .content {
+        padding: 0;
+      }
+      .section,
+      .dataset-card,
+      .gap-card,
+      .idea-card,
+      .closing-card,
+      .metric,
+      .hero-card,
+      .signal-card {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="content">
+      <div class="eyebrow">Deliverable 2 · OSINT & data inventory</div>
+      <h1>Sujet 1 — Log as code</h1>
+      <p class="subtitle">Génération automatisée de politiques de logs de sécurité à partir de données CTI, de vulnérabilités priorisées et d’exemples de sources de détection.</p>
+
+      <section class="hero-grid">
+        <div class="hero-card">
+          <p><strong>Objectif de l’étape :</strong> démontrer une démarche crédible de collecte, structuration et exploitation de données ouvertes pour répondre à la question centrale du sujet :</p>
+          <div class="quote">Quels logs faut-il collecter en priorité pour détecter les menaces qui comptent vraiment&nbsp;?</div>
+        </div>
+        <aside class="signal-card">
+          <div class="signal-label">Signal stratégique</div>
+          <div class="signal-main">Le sujet n’est pas de collecter plus de logs.</div>
+          <p>Le sujet est de justifier quels logs méritent réellement d’être collectés, pour quelles menaces, sur quels actifs, et avec quelle valeur de détection.</p>
+        </aside>
+      </section>
+
+      <section class="metrics">
+        <article class="metric">
+          <div class="kicker">Sources CTI</div>
+          <div class="value">3</div>
+          <p>ATT&amp;CK, CVE/NVD/CVSS, exemples de logs</p>
+        </article>
+        <article class="metric">
+          <div class="kicker">Fichier pivot</div>
+          <div class="value">1</div>
+          <p>`mapping_ttps_cve_logs.csv` relie menace, log et détection</p>
+        </article>
+        <article class="metric">
+          <div class="kicker">Corpus CVE</div>
+          <div class="value">5</div>
+          <p>Entrées observées dans l’extrait CVE local</p>
+        </article>
+        <article class="metric">
+          <div class="kicker">Constat</div>
+          <div class="value">MVP</div>
+          <p>Assez de matière pour un prototype, pas pour une généralisation forte</p>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>OSINT framework retenu</h2>
+          <div class="section-tag">Pipeline de connaissance</div>
+        </div>
+        <p>Le socle informationnel repose sur trois familles de données complémentaires : <strong>MITRE ATT&amp;CK</strong> pour les TTP, <strong>CVE / NVD / CVSS</strong> pour la criticité vulnérabilité, et <strong>les schémas / exemples de logs</strong> pour transformer la menace théorique en besoins de détection concrets.</p>
+        <div class="mini-flow">
+          <div class="flow-step"><strong>1 · CVE</strong>Prioriser les vulnérabilités critiques selon leur sévérité et leur contexte.</div>
+          <div class="flow-step"><strong>2 · TTP</strong>Associer les CVE à des techniques ATT&amp;CK pertinentes.</div>
+          <div class="flow-step"><strong>3 · Logs</strong>Identifier les sources et champs nécessaires à la détection.</div>
+          <div class="flow-step"><strong>4 · Policy</strong>Formaliser une policy YAML/JSON lisible et défendable.</div>
+          <div class="flow-step"><strong>5 · Suite</strong>Ajouter ensuite scoring, coût, bruit et contexte d’actifs.</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Inventaire des données réellement présentes</h2>
+          <div class="section-tag">Sujet1 / MiseEnJambe</div>
+        </div>
+        <div class="dataset-grid">
+          <article class="dataset-card tone-blue">
+            <h3>Extrait CVE & CVSS</h3>
+            <p>Base utile pour la priorisation initiale des vulnérabilités, avec sévérité, description, contexte d’exploitation et liens vers ATT&amp;CK.</p>
+            <div class="dataset-meta">
+              <span class="pill">Extrait_cve_data.JSON</span>
+              <span class="pill">5 entrées</span>
+              <span class="pill">cve_id / cvss_score / exploitability</span>
+            </div>
+            <ul>
+              <li>porte déjà un score CVSS et des métadonnées d’exploitation ;</li>
+              <li>sert de base au ranking des menaces ;</li>
+              <li>complété par `cve_data_with_cvss_and_mitre.csv` pour la manipulation tabulaire.</li>
+            </ul>
+          </article>
+
+          <article class="dataset-card tone-cyan">
+            <h3>Extrait MITRE ATT&amp;CK</h3>
+            <p>Le fichier ATT&amp;CK local contient les éléments les plus précieux pour le sujet : plateformes, data sources, procédures d’exemple et composants de détection.</p>
+            <div class="dataset-meta">
+              <span class="pill">Extrait_mitre_attck.JSON</span>
+              <span class="pill">attack-pattern</span>
+              <span class="pill">data_components / tactics / platforms</span>
+            </div>
+            <ul>
+              <li>excellent fond pour relier technique et détection ;</li>
+              <li>mais le fichier semble mal formé en fin de document ;</li>
+              <li>à remplacer ensuite par une extraction propre depuis la source MITRE STIX.</li>
+            </ul>
+          </article>
+
+          <article class="dataset-card tone-amber">
+            <h3>Fichier pivot TTP → CVE → logs</h3>
+            <p>La meilleure brique actuelle pour un MVP : le mapping relie déjà menace, type de log, champs utiles, requêtes Splunk et exemples Sigma.</p>
+            <div class="dataset-meta">
+              <span class="pill">mapping_ttps_cve_logs.csv</span>
+              <span class="pill">5 lignes</span>
+              <span class="pill">T1059 / T1190 / T1048…</span>
+            </div>
+            <ul>
+              <li>permet de raconter directement la chaîne menace → indicateur → log ;</li>
+              <li>très fort pour une démo ;</li>
+              <li>volume trop faible pour représenter une vraie base de connaissances complète.</li>
+            </ul>
+          </article>
+
+          <article class="dataset-card tone-rose">
+            <h3>Exemples de logs hôte, web et réseau</h3>
+            <p>Le repo contient des exemples Windows, Linux, Apache, Sysmon, Suricata et trafic réseau qui permettent de montrer la normalisation multi-sources.</p>
+            <div class="dataset-meta">
+              <span class="pill">Windows CSV</span>
+              <span class="pill">Linux syslog</span>
+              <span class="pill">Apache / Sysmon / Suricata / XLSX réseau</span>
+            </div>
+            <ul>
+              <li>bons supports pédagogiques pour illustrer les signaux détectables ;</li>
+              <li>hétérogènes en format et qualité ;</li>
+              <li>plutôt synthétiques ou démonstratifs que réellement opérationnels.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Ce que ces données permettent déjà</h2>
+          <div class="section-tag">Capacité prototype</div>
+        </div>
+        <p>Le corpus est limité, mais il est déjà suffisant pour un <strong>MVP crédible</strong> : filtrer des CVE critiques, les rattacher à des TTP, identifier les logs utiles, puis générer une politique structurée avec les champs obligatoires et une justification de détection.</p>
+        <div class="mini-flow">
+          <div class="flow-step"><strong>Prioriser</strong>Filtrer les CVE par sévérité, contexte et exploitation.</div>
+          <div class="flow-step"><strong>Enrichir</strong>Relier les vulnérabilités aux techniques ATT&amp;CK.</div>
+          <div class="flow-step"><strong>Observer</strong>Identifier les sources et composants de logs nécessaires.</div>
+          <div class="flow-step"><strong>Générer</strong>Sortir une policy YAML/JSON structurée.</div>
+          <div class="flow-step"><strong>Expliquer</strong>Justifier pourquoi chaque source de log est recommandée.</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Intelligence gaps et risques</h2>
+          <div class="section-tag">Ce qu’il faut assumer</div>
+        </div>
+        <div class="gaps-grid">
+          <article class="gap-card">
+            <h3>Volume et couverture</h3>
+            <p>Les fichiers-clés ont parfois seulement 5 entrées. C’est suffisant pour démontrer la logique, pas pour soutenir une généralisation forte.</p>
+          </article>
+          <article class="gap-card">
+            <h3>Qualité et homogénéité</h3>
+            <p>Fichiers mal formés, formats mixtes, quoting imparfait : une couche de normalisation robuste sera indispensable avant industrialisation.</p>
+          </article>
+          <article class="gap-card">
+            <h3>Réalisme opérationnel</h3>
+            <p>Les logs présents sont surtout synthétiques ou démonstratifs. Ils permettent de prouver une démarche, pas de valider directement une policy prête à déployer.</p>
+          </article>
+          <article class="gap-card">
+            <h3>Contexte métier Marine</h3>
+            <p>Il manque encore la criticité des actifs, les contraintes de stockage, la volumétrie réelle, le bruit attendu et la politique actuelle de rétention.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Données additionnelles les plus valorisantes</h2>
+          <div class="section-tag">Ajouts intelligents</div>
+        </div>
+        <div class="ideas-grid">
+          <article class="idea-card">
+            <h3>CISA KEV</h3>
+            <p>Ajoute la notion “activement exploitée”, beaucoup plus forte que la seule sévérité CVSS pour prioriser les vulnérabilités qui comptent réellement.</p>
+          </article>
+          <article class="idea-card">
+            <h3>ATT&amp;CK Data Components</h3>
+            <p>L’ajout le plus stratégique pour un sujet log as code : passer de la TTP à la donnée concrète nécessaire pour la détecter.</p>
+          </article>
+          <article class="idea-card">
+            <h3>Sigma repository</h3>
+            <p>Renforce le pont entre menace, source de log, champs observables et logique de détection reproductible.</p>
+          </article>
+          <article class="idea-card">
+            <h3>Flux MITRE / CVE à jour</h3>
+            <p>Permet d’industrialiser la veille et de montrer que la démarche n’est pas figée sur des extraits locaux statiques.</p>
+          </article>
+          <article class="idea-card">
+            <h3>Mini CMDB d’actifs</h3>
+            <p>Quelques types d’actifs (`AD`, `web`, `poste`, `serveur Linux`, `bastion`) suffiraient déjà à contextualiser la policy.</p>
+          </article>
+          <article class="idea-card">
+            <h3>Score coût / bruit</h3>
+            <p>Le meilleur twist différenciant : introduire une notion simple de coût de collecte, bruit et volumétrie pour prioriser sous contrainte.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Recommandation stratégique</h2>
+          <div class="section-tag">Angle différenciant</div>
+        </div>
+        <div class="closing-grid">
+          <article class="closing-card tone-blue">
+            <h3>Ce qu’il faut construire ensuite</h3>
+            <ul>
+              <li>un MVP qui sort des logs <strong>indispensables</strong>, <strong>recommandés</strong> et <strong>optionnels</strong> ;</li>
+              <li>une justification lisible : menace, type d’actif, champs utiles, intérêt de détection ;</li>
+              <li>si possible, une première couche de coût / bruit / couverture.</li>
+            </ul>
+          </article>
+          <article class="closing-card tone-cyan">
+            <h3>Le vrai message fort</h3>
+            <p>La valeur du projet n’est pas de générer “encore un YAML”. La valeur est d’aider à décider <strong>quels logs valent réellement la peine d’être collectés</strong>.</p>
+          </article>
+        </div>
+        <div class="quote">Conclusion : le repo fournit déjà une base suffisante pour un prototype défendable. La bonne stratégie est donc d’assumer les limites du corpus, de montrer un pipeline propre et explicable, puis d’enrichir le système avec les données qui augmentent vraiment sa pertinence opérationnelle.</div>
+      </section>
+
+      <div class="footer-note">Fichier HTML pensé pour conversion PDF A4 · Hackathon Albert 2026 · Sujet 1</div>
+    </div>
+  </main>
+</body>
+</html>

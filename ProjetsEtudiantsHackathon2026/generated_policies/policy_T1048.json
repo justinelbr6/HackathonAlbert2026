@@ -1,0 +1,59 @@
+{
+  "policy": {
+    "name": "Politique priorisée pour T1048",
+    "target": {
+      "threat_id": "T1048",
+      "ttp_id": "T1048",
+      "ttp_name": "Exfiltration Over Alternative Protocol",
+      "asset_id": "network_dns",
+      "asset_type": "network",
+      "asset_criticality": "medium",
+      "exposure": "hybrid",
+      "business_role": "Résolution DNS et visibilité réseau",
+      "current_log_sources": "DNS Logs;Suricata",
+      "retention_days": "30",
+      "asset_notes": "Actif utile pour exfiltration et C2",
+      "strategy": "minimal"
+    },
+    "decision_model": {
+      "name": "Threat-to-Log Value Engine",
+      "principle": "Prioriser les logs selon menace, criticité de l'actif, couverture, coût et bruit.",
+      "priority_levels": [
+        "indispensable",
+        "recommandé",
+        "optionnel"
+      ]
+    },
+    "recommendations": [
+      {
+        "log_source": "DNS Logs",
+        "log_type": "network",
+        "priority": "optionnel",
+        "log_value_score": 4.29,
+        "fields": [
+          "DnsQuery",
+          "ProcessName",
+          "DestinationIP"
+        ],
+        "estimated_cost": "moyen",
+        "estimated_noise": "fort",
+        "detection_coverage": "moyenne",
+        "reason": "DNS Logs est classé optionnel pour T1048 car cette source permet d'observer DnsQuery, ProcessName, DestinationIP sur un actif de type network avec une criticité medium.",
+        "blind_spot_if_missing": "Angle mort potentiel : sans DNS Logs, l'équipe risque de moins bien détecter les comportements associés à T1048, notamment les signaux portés par DnsQuery, ProcessName, DestinationIP.",
+        "covers": {
+          "ttp_id": "T1048",
+          "ttp_name": "Exfiltration Over Alternative Protocol",
+          "tactic": "exfiltration",
+          "cve_id": "",
+          "cve_description": "",
+          "cve_score": "7"
+        },
+        "detection_examples": {
+          "sample_log": "DNS Query: attacker.com",
+          "splunk_query": "index=* sourcetype=dns Query=\\*.attacker.com\\\" | stats count by src_ip, Query",
+          "sigma_rule": "title: Detect DNS Tunneling Activity\nlogsource:\n  category: network_connection\n  product: windows\ndetection:\n  selection:\n    DestinationHostname|endswith: '.attacker.com'\n  condition: selection"
+        }
+      }
+    ]
+  }
+}

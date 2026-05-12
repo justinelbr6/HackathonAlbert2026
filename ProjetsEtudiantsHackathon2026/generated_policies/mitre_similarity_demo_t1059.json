@@ -1,0 +1,88 @@
+{
+  "demo_name": "Similarité NLP MITRE ATT&CK depuis un scénario libre",
+  "scenario": "PowerShell command execution and suspicious parent process on Windows server",
+  "source_dataset": "SujetsHackathon2026/Sujet1/Généralisation/enterprise-attack.json.zip",
+  "recommendations": [
+    {
+      "ttp_id": "T1059",
+      "name": "Command and Scripting Interpreter",
+      "tactics": [
+        "execution"
+      ],
+      "data_sources": [],
+      "similarity_score": 0.4769,
+      "matched_terms": [
+        "command",
+        "execution",
+        "powershell",
+        "Windows"
+      ],
+      "why": "Command and Scripting Interpreter ressort car le scénario partage les termes command, execution, powershell, Windows avec MITRE ATT&CK."
+    },
+    {
+      "ttp_id": "T1564.010",
+      "name": "Process Argument Spoofing",
+      "tactics": [
+        "stealth"
+      ],
+      "data_sources": [],
+      "similarity_score": 0.4159,
+      "matched_terms": [
+        "command",
+        "execution",
+        "parent",
+        "process",
+        "Windows"
+      ],
+      "why": "Process Argument Spoofing ressort car le scénario partage les termes command, execution, parent, process, Windows avec MITRE ATT&CK."
+    },
+    {
+      "ttp_id": "T1059.001",
+      "name": "PowerShell",
+      "tactics": [
+        "execution"
+      ],
+      "data_sources": [],
+      "similarity_score": 0.4038,
+      "matched_terms": [
+        "command",
+        "execution",
+        "powershell",
+        "process",
+        "Windows"
+      ],
+      "why": "PowerShell ressort car le scénario partage les termes command, execution, powershell, process, Windows avec MITRE ATT&CK."
+    },
+    {
+      "ttp_id": "T1036.009",
+      "name": "Break Process Trees",
+      "tactics": [
+        "stealth"
+      ],
+      "data_sources": [],
+      "similarity_score": 0.3775,
+      "matched_terms": [
+        "execution",
+        "parent",
+        "process"
+      ],
+      "why": "Break Process Trees ressort car le scénario partage les termes execution, parent, process avec MITRE ATT&CK."
+    },
+    {
+      "ttp_id": "T1055.011",
+      "name": "Extra Window Memory Injection",
+      "tactics": [
+        "stealth",
+        "privilege-escalation"
+      ],
+      "data_sources": [],
+      "similarity_score": 0.3575,
+      "matched_terms": [
+        "execution",
+        "process",
+        "Windows"
+      ],
+      "why": "Extra Window Memory Injection ressort car le scénario partage les termes execution, process, Windows avec MITRE ATT&CK."
+    }
+  ]
+}

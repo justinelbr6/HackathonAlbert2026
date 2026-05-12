@@ -1,0 +1,6 @@
+asset_id,asset_type,criticality,exposure,business_role,current_log_sources,retention_days,notes
+web_frontend,web_server,high,internet,Portail web exposé utilisé par des utilisateurs externes,"Apache Access Logs;Suricata",30,Actif prioritaire pour T1190 et CVE web critiques
+win_srv_ops,windows_server,high,internal,Serveur Windows supportant des processus opérationnels,"Windows Sysmon;Windows Security",30,Actif prioritaire pour exécution de commandes et défense évasive
+ad_core,active_directory,critical,internal,Contrôle d'identité et authentification centrale,"Windows Security;Windows Sysmon",90,Actif critique pour mouvements latéraux et compromission d'identité
+linux_admin,linux_server,medium,internal,Serveur Linux d'administration,"Linux Syslog;auditd",30,Actif utile pour tests d'exécution et persistance
+network_dns,network,medium,hybrid,Résolution DNS et visibilité réseau,"DNS Logs;Suricata",30,Actif utile pour exfiltration et C2
