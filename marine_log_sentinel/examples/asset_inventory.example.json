@@ -1,0 +1,17 @@
+{
+  "default_criticality": "medium",
+  "hosts": {
+    "192.168.1.100": {
+      "criticality": "high",
+      "designation": "Serveur applicatif exposition SI interne"
+    },
+    "WIN-SRV-01": {
+      "criticality": "high",
+      "designation": "Serveur Windows opérationnel"
+    },
+    "ubuntu-server": {
+      "criticality": "medium",
+      "designation": "Serveur Linux administration"
+    }
+  }
+}

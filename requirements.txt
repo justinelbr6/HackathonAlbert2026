@@ -1,0 +1,38 @@
+# Marine Log Sentinel — base dependencies
+# After install run:  pip freeze > requirements.lock.txt
+# to pin exact versions for reproducible / audit-grade builds.
+
+# --- Backend core ---
+pandas>=2.2,<3
+pyarrow>=15,<20
+pydantic>=2.6,<3
+duckdb>=0.10,<2
+openpyxl>=3.1,<4         # required to parse sample_logs_network_traffic.csv.xlsx
+
+# --- Threat Intelligence ---
+# `pyattck` is intentionally NOT installed: it depends on pyattck-data
+# (pydantic <2.0) and pulls googletrans + bs4, expanding our network
+# surface in a way incompatible with our air-gap posture.
+# See marine_log_sentinel/ARCHITECTURE_DECISIONS.md - ADR-001.
+attackcti>=0.3.7
+stix2>=3.0
+taxii2-client>=2.3
+networkx>=3.2,<4        # local knowledge graph CVE <-> TTP <-> Mitigation <-> DataComponent
+
+# --- Machine Learning ---
+scikit-learn>=1.4,<2
+sentence-transformers>=2.6
+numpy>=1.26,<3
+
+# --- Knowledge graph ---
+networkx>=3.2,<4
+
+# --- Cache & networking (only during initial TI sync; disabled in air-gap mode) ---
+requests>=2.31
+python-dotenv>=1.0
+
+# --- Quality ---
+pytest>=8.0
+
+# --- Interactive dashboard (hackathon/démo) ---
+streamlit>=1.31,<2
